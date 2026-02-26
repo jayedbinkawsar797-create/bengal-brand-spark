@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
@@ -13,27 +13,40 @@ const navLinks = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [location.pathname]);
 
   return (
     <motion.nav
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed top-0 left-0 right-0 z-50 glass-card border-b border-border/30"
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled
+          ? "glass-card border-b border-border/30 shadow-[0_4px_30px_rgba(0,0,0,0.3)]"
+          : "bg-transparent border-b border-transparent"
+      }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-        {/* Logo */}
-        <Link to="/" className="flex flex-col leading-none">
+        <Link to="/" className="flex flex-col leading-none group">
           <span className="font-heading text-xl font-bold tracking-tight">
             <span className="text-gradient-brand">MIND</span>
           </span>
-          <span className="font-heading text-[10px] tracking-[0.3em] text-muted-foreground uppercase">
+          <span className="font-heading text-[10px] tracking-[0.3em] text-muted-foreground uppercase group-hover:text-foreground transition-colors">
             Communication
           </span>
         </Link>
 
-        {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-8">
           {navLinks.map((link) => (
             <Link
@@ -50,15 +63,13 @@ const Navbar = () => {
           ))}
         </div>
 
-        {/* CTA */}
         <Link
           to="/contact"
-          className="hidden md:block px-6 py-2.5 text-sm font-semibold rounded-full bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+          className="hidden md:block px-6 py-2.5 text-sm font-semibold rounded-full bg-primary text-primary-foreground hover:shadow-[0_0_20px_hsl(348,80%,48%,0.3)] transition-all duration-300"
         >
           Get Started
         </Link>
 
-        {/* Mobile Toggle */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="md:hidden text-foreground"
@@ -67,7 +78,6 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -98,6 +108,13 @@ const Navbar = () => {
                   </Link>
                 </motion.div>
               ))}
+              <Link
+                to="/contact"
+                onClick={() => setIsOpen(false)}
+                className="mt-2 inline-flex items-center justify-center px-6 py-3 rounded-full bg-primary text-primary-foreground font-semibold text-sm"
+              >
+                Get Started
+              </Link>
             </div>
           </motion.div>
         )}
